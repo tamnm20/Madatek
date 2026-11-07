@@ -1,0 +1,43 @@
+{
+    "gateway_id": "12345",
+    "device_id": "123456",
+    "ftp_host": "192.168.0.2",
+    "ftp_port": 21,
+    "ftp_user": "databox",
+    "ftp_pass": "123456",
+    "mqtt_host": "163.227.230.8",
+    "mqtt_port": 1883,
+    "mqtt_user": "dev",
+    "mqtt_pass": "dev",
+    "mqtt_topic": "iot/admin/water/telemetry",
+    "interval_seconds": 300,
+    "interval_display": 1
+}
+
+
+####### ben tren danh cho test, ben duoi la defautl
+
+
+{
+    "gateway_id": "000000",
+    "device_id": "000000",
+    "ftp_host": "0.0.0.0",
+    "ftp_port": 21,
+    "ftp_user": "user",
+    "ftp_pass": "pass",
+    "mqtt_host": "0.0.0.0",
+    "mqtt_port": 1883,
+    "mqtt_user": "user",
+    "mqtt_pass": "pass",
+    "mqtt_topic": "iot/admin/water/telemetry",
+    "interval_seconds": 300,
+    "interval_display": 1
+}
+
+
+
+
+
+
+
+
