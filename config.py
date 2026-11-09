@@ -4,7 +4,7 @@
 # =============================================================================
 
 # --- Chế độ chạy ---
-DEMO_MODE = False               # TODO: False khi chạy thật
+DEMO_MODE = True               # TODO: False khi chạy thật
 
 # --- Mật khẩu màn hình cài đặt ---
 SETTINGS_PASSWORD = "1"  # TODO: đổi mật khẩu trước khi deploy

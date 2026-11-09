@@ -1,0 +1,11 @@
+mosquitto_sub -t 'iot/admin/water/telemetry' -F '%p' | jq .
+
+QT_QPA_PLATFORM=offscreen python3 main.py
+
+QT_QPA_PLATFORM=linuxfb:fb=/dev/fb0 python3 main.py
+
+
+setterm -cursor off                                         #Tắt con trỏ
+sudo QT_QPA_PLATFORM=linuxfb:fb=/dev/fb0 python3 main.py
+
+setterm -cursor on

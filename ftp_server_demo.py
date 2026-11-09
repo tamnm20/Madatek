@@ -10,8 +10,8 @@ from pyftpdlib.servers import FTPServer
 from pyftpdlib.authorizers import DummyAuthorizer
 
 FTP_PORT = 2121
-FTP_USER = "demo"
-FTP_PASS = "demo"
+FTP_USER = "databox"
+FTP_PASS = "123456"
 FTP_DIR  = "./ftp_root"
 
 os.makedirs(FTP_DIR, exist_ok=True)
