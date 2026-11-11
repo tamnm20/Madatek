@@ -8,7 +8,7 @@ from pymodbus.client import ModbusTcpClient
 from pymodbus.payload import BinaryPayloadDecoder
 
 # ===== THAY ĐỔI CÁC THÔNG SỐ NÀY =====
-HOST      = "192.168.0.9"
+HOST      = "192.168.25.1"
 PORT      = 502
 UNIT_ID   = 1
 COUNT     = 20               # 10 nếu int16, 20 nếu float32, 40 nếu float64

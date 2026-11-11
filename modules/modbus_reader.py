@@ -136,13 +136,15 @@ def _read_modbus():
         # --- Đọc Input Register (3xxxx) — float32 ---
         input_result = client.read_input_registers(
             address=config.MODBUS_INPUT_START,
-            count=config.MODBUS_INPUT_COUNT
+            count=config.MODBUS_INPUT_COUNT,
+            slave=config.MODBUS_UNIT_ID
         )
 
         # --- Đọc Holding Register (4xxxx) — int16 ---
         holding_result = client.read_holding_registers(
             address=config.MODBUS_HOLDING_START,
-            count=config.MODBUS_HOLDING_COUNT
+            count=config.MODBUS_HOLDING_COUNT,
+            slave=config.MODBUS_UNIT_ID
         )
 
         # Lỗi đọc register → đánh dấu mất kết nối để lần sau reconnect

@@ -4,13 +4,13 @@
 # =============================================================================
 
 # --- Chế độ chạy ---
-DEMO_MODE = True               # TODO: False khi chạy thật
+DEMO_MODE = False               # TODO: False khi chạy thật
 
 # --- Mật khẩu màn hình cài đặt ---
 SETTINGS_PASSWORD = "1"  # TODO: đổi mật khẩu trước khi deploy
 
 # --- Modbus TCP ---
-MODBUS_HOST            = "192.168.0.9"   # TODO: IP thiết bị đối tác
+MODBUS_HOST            = "192.168.25.1"   # TODO: IP thiết bị đối tác
 MODBUS_PORT            = 502
 MODBUS_UNIT_ID         = 1
 MODBUS_BYTE_ORDER      = "big"           # "big" hoặc "little"
