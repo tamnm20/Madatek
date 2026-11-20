@@ -4,7 +4,7 @@
 # =============================================================================
 
 # --- Chế độ chạy ---
-DEMO_MODE = False               # TODO: False khi chạy thật
+DEMO_MODE = True               # TODO: False khi chạy thật
 
 # --- Mật khẩu màn hình cài đặt ---
 SETTINGS_PASSWORD = "1"  # TODO: đổi mật khẩu trước khi deploy
@@ -15,7 +15,7 @@ MODBUS_PORT            = 502
 MODBUS_UNIT_ID         = 1
 MODBUS_BYTE_ORDER      = "big"           # "big" hoặc "little"
 MODBUS_WORD_ORDER      = "big"           # "big" hoặc "little"
-MODBUS_TIMEOUT         = 10
+MODBUS_TIMEOUT         = 2
 
 # Input Register (3xxxx) — FC4 — float32 (số thực)
 MODBUS_INPUT_START     = 0               # 300001 → index 0
