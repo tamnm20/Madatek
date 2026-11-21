@@ -23,6 +23,8 @@ import pyqtgraph as pg
 
 import config
 from modules import settings_manager
+from modules import styles
+from modules.styles import THEMES
 from modules.settings_screen import SettingsScreen
 
 logger = logging.getLogger(__name__)
@@ -41,13 +43,7 @@ class CardWidget(QFrame):
         self._build_ui()
 
     def _build_ui(self):
-        self.setStyleSheet(f"""
-            QFrame {{
-                background-color: {config.COLOR_CARD_BG};
-                border: 1px solid {config.COLOR_CARD_BORDER};
-                border-radius: 6px;
-            }}
-        """)
+        self.setStyleSheet(styles.get_card_style("dark"))
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         layout = QVBoxLayout(self)
@@ -137,27 +133,22 @@ class CardWidget(QFrame):
 
     def apply_theme(self, theme):
         """Cập nhật giao diện card theo theme (Sáng / Tối)."""
-        self.setStyleSheet(f"""
-            QFrame {{
-                background-color: {theme['card_bg']};
-                border: 1px solid {theme['card_border']};
-                border-radius: 6px;
-            }}
-        """)
-        self.name_lbl.setStyleSheet(f"color: {theme['label']}; border: none;")
-        self.value_lbl.setStyleSheet(f"color: {theme['accent']}; border: none;")
-        self.unit_lbl.setStyleSheet(f"color: {theme['label']}; border: none;")
-        self.status_lbl.setStyleSheet(f"color: {theme['status_ok']}; border: none;")
+        t = styles._resolve_theme(theme)
+        self.setStyleSheet(styles.get_card_style(t))
+        self.name_lbl.setStyleSheet(f"color: {t['label']}; border: none;")
+        self.value_lbl.setStyleSheet(f"color: {t['accent']}; border: none;")
+        self.unit_lbl.setStyleSheet(f"color: {t['label']}; border: none;")
+        self.status_lbl.setStyleSheet(f"color: {t['status_ok']}; border: none;")
         if self.is_pair and hasattr(self, 'value2_lbl'):
-            self.value2_lbl.setStyleSheet(f"color: {theme['accent']}; border: none;")
+            self.value2_lbl.setStyleSheet(f"color: {t['accent']}; border: none;")
 
         # Cập nhật đồ thị PyQtGraph
-        self.plot.setBackground(theme['chart_bg'])
-        pen = pg.mkPen(color=theme['chart_line'], width=config.CHART_LINE_WIDTH)
+        self.plot.setBackground(t['chart_bg'])
+        pen = pg.mkPen(color=t['chart_line'], width=config.CHART_LINE_WIDTH)
         self.curve.setPen(pen)
 
-        rgb = self._hex_to_rgb(theme['chart_line'])
-        alpha = int(255 * theme.get('chart_fill_alpha', 0.15))
+        rgb = self._hex_to_rgb(t['chart_line'])
+        alpha = int(255 * t.get('chart_fill_alpha', 0.15))
         self.fill.setBrush(pg.mkBrush(color=(*rgb, alpha)))
 
     def update_value(self, val, val2=None):
@@ -187,34 +178,7 @@ class CardWidget(QFrame):
         self.plot.setYRange(ymin - margin, ymax + margin, padding=0)
 
 
-THEMES = {
-    "dark": {
-        "bg": "#1a1a2e",
-        "card_bg": "#16213e",
-        "card_border": "#0f3460",
-        "accent": "#4ade80",
-        "text": "#ffffff",
-        "label": "#94a3b8",
-        "status_ok": "#4ade80",
-        "status_warn": "#f59e0b",
-        "chart_bg": "#0d1b2a",
-        "chart_line": "#4ade80",
-        "chart_fill_alpha": 0.15,
-    },
-    "light": {
-        "bg": "#f1f5f9",          # Xám sáng dịu chống chói (Slate 100)
-        "card_bg": "#ffffff",     # Thẻ card trắng tinh
-        "card_border": "#cbd5e1", # Viền card xám mảnh (Slate 300)
-        "accent": "#059669",      # Xanh ngọc lục bảo đậm dễ đọc (Emerald 600)
-        "text": "#0f172a",        # Chữ đen đậm rõ nét (Slate 900)
-        "label": "#64748b",       # Chữ phụ xám trung tính (Slate 500)
-        "status_ok": "#16a34a",   # Xanh lá cây tiêu chuẩn
-        "status_warn": "#d97706", # Cam đậm
-        "chart_bg": "#f8fafc",    # Nền biểu đồ sáng rất nhạt (Slate 50)
-        "chart_line": "#059669",  # Đường line xanh đậm nét
-        "chart_fill_alpha": 0.20,
-    }
-}
+THEMES = styles.THEMES
 
 
 def create_nav_pixmap(icon_type, color_hex, size=24):
@@ -372,22 +336,7 @@ class MainWindow(QMainWindow):
         header.addStretch(1)
 
         # 3. Cụm icon bên phải: Home, Biểu đồ, Log, Đổi Theme, Cài đặt
-        nav_btn_style = f"""
-            QPushButton {{
-                background-color: {t['card_bg']};
-                border: 1px solid {t['card_border']};
-                border-radius: 6px;
-                padding: 4px;
-            }}
-            QPushButton:hover {{
-                background-color: {t['card_border']};
-                border-color: {t['accent']};
-            }}
-            QPushButton:checked {{
-                background-color: {t['card_border']};
-                border: 1px solid {t['accent']};
-            }}
-        """
+        nav_btn_style = styles.get_nav_btn_style(t)
 
         # 3.1. Nút Home (Trang chủ)
         self.btn_home = QPushButton()
@@ -430,18 +379,7 @@ class MainWindow(QMainWindow):
         self.btn_theme.setIcon(icon_theme)
         self.btn_theme.setIconSize(QSize(22, 22))
         self.btn_theme.setToolTip("Chuyển sang giao diện Sáng")
-        self.btn_theme.setStyleSheet(f"""
-            QPushButton {{
-                background-color: {t['card_bg']};
-                border: 1px solid {t['card_border']};
-                border-radius: 6px;
-                padding: 4px;
-            }}
-            QPushButton:hover {{
-                background-color: {t['card_border']};
-                border-color: {t['accent']};
-            }}
-        """)
+        self.btn_theme.setStyleSheet(styles.get_theme_btn_style(t))
         self.btn_theme.clicked.connect(self._toggle_theme)
         header.addWidget(self.btn_theme)
 
@@ -561,22 +499,7 @@ class MainWindow(QMainWindow):
         self.title_lbl.setStyleSheet(f"color: {t['text']};")
 
         # 3. Nav buttons
-        nav_style = f"""
-            QPushButton {{
-                background-color: {t['card_bg']};
-                border: 1px solid {t['card_border']};
-                border-radius: 6px;
-                padding: 4px;
-            }}
-            QPushButton:hover {{
-                background-color: {t['card_border']};
-                border-color: {t['accent']};
-            }}
-            QPushButton:checked {{
-                background-color: {t['card_border']};
-                border: 1px solid {t['accent']};
-            }}
-        """
+        nav_style = styles.get_nav_btn_style(t)
         for btn in (self.btn_home, self.btn_chart, self.btn_log, self.btn_settings):
             btn.setStyleSheet(nav_style)
 
@@ -593,18 +516,7 @@ class MainWindow(QMainWindow):
             self.btn_theme.setIcon(QIcon(create_nav_pixmap("moon", t["label"])))
             self.btn_theme.setToolTip("Chuyển sang giao diện Tối")
 
-        self.btn_theme.setStyleSheet(f"""
-            QPushButton {{
-                background-color: {t['card_bg']};
-                border: 1px solid {t['card_border']};
-                border-radius: 6px;
-                padding: 4px;
-            }}
-            QPushButton:hover {{
-                background-color: {t['card_border']};
-                border-color: {t['accent']};
-            }}
-        """)
+        self.btn_theme.setStyleSheet(styles.get_theme_btn_style(t))
 
         # 5. Toàn bộ các thẻ Card (Tab 0)
         for card in self.cards.values():

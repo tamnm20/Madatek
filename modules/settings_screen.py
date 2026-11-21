@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 from modules import settings_manager
+from modules import styles
 from modules.keyboard import VirtualKeyboard
 import config
 
@@ -34,118 +35,12 @@ class SettingsScreen(QWidget):
         self._on_close = on_close
         self._on_trigger_data = on_trigger_data
         self._keyboard = VirtualKeyboard(self)
-        self._theme = {
-            "bg": "#1a1a2e",
-            "card_bg": "#16213e",
-            "card_border": "#0f3460",
-            "accent": "#4ade80",
-            "text": "#ffffff",
-            "label": "#94a3b8",
-            "chart_bg": "#0d1b2a",
-            "status_ok": "#4ade80",
-            "status_warn": "#f59e0b",
-        }
+        self._theme = styles._resolve_theme("dark")
         self.setStyleSheet(f"background-color: {self._theme['bg']};")
         self._build_ui()
 
     def _font(self, size, bold=False):
         return QFont(config.FONT_NAME, size, QFont.Bold if bold else QFont.Normal)
-
-    def _input_style_disabled(self):
-        bg = self._theme.get('card_bg', '#0a0a0a')
-        border = self._theme.get('card_border', '#1a1a1a')
-        color = self._theme.get('label', '#444444')
-        return f"""
-            QLineEdit {{
-                background-color: {bg};
-                border: 1px solid {border};
-                border-radius: 6px;
-                padding: 8px 12px;
-                color: {color};
-                font-size: 13px;
-            }}
-        """
-
-    def _input_style_enabled(self):
-        return f"""
-            QLineEdit {{
-                background-color: {self._theme.get('chart_bg', '#0d1b2a')};
-                border: 1px solid {self._theme.get('card_border', '#0f3460')};
-                border-radius: 6px;
-                padding: 8px 12px;
-                color: {self._theme.get('text', '#ffffff')};
-                font-size: 13px;
-            }}
-            QLineEdit:focus {{ border: 1px solid {self._theme.get('accent', '#4ade80')}; }}
-        """
-
-    def _input_pass_style_disabled(self):
-        bg = self._theme.get('card_bg', '#0a0a0a')
-        border = self._theme.get('card_border', '#1a1a1a')
-        color = self._theme.get('label', '#444444')
-        return f"""
-            QLineEdit {{
-                background-color: {bg};
-                border: 1px solid {border};
-                border-right: none;
-                border-radius: 6px 0px 0px 6px;
-                padding: 8px 12px;
-                color: {color};
-                font-size: 13px;
-            }}
-        """
-
-    def _input_pass_style_enabled(self):
-        return f"""
-            QLineEdit {{
-                background-color: {self._theme.get('chart_bg', '#0d1b2a')};
-                border: 1px solid {self._theme.get('card_border', '#0f3460')};
-                border-right: none;
-                border-radius: 6px 0px 0px 6px;
-                padding: 8px 12px;
-                color: {self._theme.get('text', '#ffffff')};
-                font-size: 13px;
-            }}
-            QLineEdit:focus {{ border: 1px solid {self._theme.get('accent', '#4ade80')}; border-right: none; }}
-        """
-
-    def _eye_style_disabled(self):
-        bg = self._theme.get('card_bg', '#0a0a0a')
-        border = self._theme.get('card_border', '#1a1a1a')
-        color = self._theme.get('label', '#444444')
-        return f"""
-            QPushButton {{
-                background-color: {bg};
-                border: 1px solid {border};
-                border-left: none;
-                border-radius: 0px 6px 6px 0px;
-                color: {color};
-                font-size: 14px;
-            }}
-        """
-
-    def _eye_style_enabled(self):
-        return f"""
-            QPushButton {{
-                background-color: {self._theme.get('chart_bg', '#0d1b2a')};
-                border: 1px solid {self._theme.get('card_border', '#0f3460')};
-                border-left: none;
-                border-radius: 0px 6px 6px 0px;
-                color: {self._theme.get('label', '#94a3b8')};
-                font-size: 14px;
-            }}
-            QPushButton:checked {{ color: {self._theme.get('accent', '#4ade80')}; }}
-            QPushButton:hover {{ background-color: {self._theme.get('card_border', '#0f3460')}; }}
-        """
-
-    def _section_style(self):
-        return f"""
-            QFrame {{
-                background-color: {self._theme.get('card_bg', '#16213e')};
-                border: 1px solid {self._theme.get('card_border', '#0f3460')};
-                border-radius: 8px;
-            }}
-        """
 
     def _connect_keyboard(self, inp):
         """Kết nối ô input với bàn phím ảo."""
@@ -187,14 +82,14 @@ class SettingsScreen(QWidget):
             inp.setFixedHeight(42)
             inp.setEchoMode(QLineEdit.Password)
             inp.setEnabled(False)
-            inp.setStyleSheet(self._input_pass_style_disabled())
+            inp.setStyleSheet(styles.get_input_style(self._theme, enabled=False, is_password=True))
             self._connect_keyboard(inp)
 
             btn_eye = QPushButton("🔒")
             btn_eye.setFixedSize(42, 42)
             btn_eye.setCheckable(True)
             btn_eye.setEnabled(False)
-            btn_eye.setStyleSheet(self._eye_style_disabled())
+            btn_eye.setStyleSheet(styles.get_eye_btn_style(self._theme, enabled=False))
             btn_eye.clicked.connect(lambda checked, i=inp, b=btn_eye: (
                 i.setEchoMode(QLineEdit.Normal if checked else QLineEdit.Password),
                 b.setText("🔓" if checked else "🔒")
@@ -211,14 +106,14 @@ class SettingsScreen(QWidget):
             inp.setText(str(self._settings.get(key, "")))
             inp.setFixedHeight(42)
             inp.setEnabled(False)
-            inp.setStyleSheet(self._input_style_disabled())
+            inp.setStyleSheet(styles.get_input_style(self._theme, enabled=False, is_password=False))
             self._connect_keyboard(inp)
             layout.addWidget(inp)
             self._inputs[key] = inp
 
     def _make_section(self, title, fields):
         frame = QFrame()
-        frame.setStyleSheet(self._section_style())
+        frame.setStyleSheet(styles.get_section_frame_style(self._theme))
         frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self._section_frames.append(frame)
 
@@ -276,17 +171,7 @@ class SettingsScreen(QWidget):
         self._pass_input.setPlaceholderText("Mật khẩu...")
         self._pass_input.setFixedHeight(36)
         self._pass_input.setFixedWidth(140)
-        self._pass_input.setStyleSheet(f"""
-            QLineEdit {{
-                background-color: {config.COLOR_CHART_BG};
-                border: 1px solid {config.COLOR_CARD_BORDER};
-                border-radius: 6px;
-                padding: 6px 10px;
-                color: {config.COLOR_TEXT};
-                font-size: 13px;
-            }}
-            QLineEdit:focus {{ border: 1px solid {config.COLOR_ACCENT}; }}
-        """)
+        self._pass_input.setStyleSheet(styles.get_pass_unlock_input_style(self._theme))
         self._pass_input.returnPressed.connect(self._check_password)
         _orig_pass_focus = self._pass_input.focusInEvent
         def _pass_focus(event):
@@ -301,17 +186,7 @@ class SettingsScreen(QWidget):
         self._btn_unlock = QPushButton("Xác nhận")
         self._btn_unlock.setFixedHeight(36)
         self._btn_unlock.setFixedWidth(90)
-        self._btn_unlock.setStyleSheet(f"""
-            QPushButton {{
-                background-color: {config.COLOR_ACCENT};
-                border: none;
-                border-radius: 6px;
-                color: {config.COLOR_BG};
-                font-size: 12px;
-                font-weight: bold;
-            }}
-            QPushButton:hover {{ background-color: #36d46a; }}
-        """)
+        self._btn_unlock.setStyleSheet(styles.get_unlock_btn_style(self._theme))
         self._btn_unlock.clicked.connect(self._check_password)
         header.addWidget(self._btn_unlock)
 
@@ -327,16 +202,7 @@ class SettingsScreen(QWidget):
         self._btn_close = QPushButton("✕  Đóng")
         self._btn_close.setFixedHeight(36)
         self._btn_close.setFixedWidth(80)
-        self._btn_close.setStyleSheet(f"""
-            QPushButton {{
-                background-color: transparent;
-                border: 1px solid {config.COLOR_STATUS_WARN};
-                border-radius: 6px;
-                color: {config.COLOR_STATUS_WARN};
-                font-size: 12px;
-            }}
-            QPushButton:hover {{ background-color: {config.COLOR_CARD_BG}; }}
-        """)
+        self._btn_close.setStyleSheet(styles.get_close_btn_style(self._theme))
         self._btn_close.clicked.connect(self._close_view)
         header.addWidget(self._btn_close)
 
@@ -351,29 +217,7 @@ class SettingsScreen(QWidget):
         self._btn_cancel.setFixedHeight(36)
         self._btn_cancel.setFixedWidth(100)
         self._btn_cancel.setEnabled(False)
-        self._btn_cancel.setStyleSheet(f"""
-            QPushButton {{
-                background-color: transparent;
-                border: 1px solid #444444;
-                border-radius: 6px;
-                color: #555555;
-                font-size: 12px;
-                font-weight: bold;
-            }}
-            QPushButton:enabled {{
-                border: 2px solid #e05c5c;
-                color: #e05c5c;
-                background-color: transparent;
-            }}
-            QPushButton:enabled:hover {{
-                background-color: #3a1010;
-                border-color: #ff7070;
-                color: #ff7070;
-            }}
-            QPushButton:enabled:pressed {{
-                background-color: #5a1a1a;
-            }}
-        """)
+        self._btn_cancel.setStyleSheet(styles.get_cancel_btn_style())
         self._btn_cancel.clicked.connect(self._close_view)
 
         # --- Nút Lưu cài đặt ---
@@ -381,72 +225,21 @@ class SettingsScreen(QWidget):
         self._btn_save.setFixedHeight(36)
         self._btn_save.setFixedWidth(140)
         self._btn_save.setEnabled(False)
-        self._btn_save.setStyleSheet(f"""
-            QPushButton {{
-                background-color: #0a0a0a;
-                border: none;
-                border-radius: 6px;
-                color: #333333;
-                font-size: 12px;
-                font-weight: bold;
-            }}
-            QPushButton:enabled {{
-                background-color: {config.COLOR_ACCENT};
-                color: {config.COLOR_BG};
-            }}
-            QPushButton:enabled:hover {{ background-color: #36d46a; }}
-            QPushButton:enabled:pressed {{ background-color: #28a857; }}
-        """)
+        self._btn_save.setStyleSheet(styles.get_save_btn_style(self._theme))
         self._btn_save.clicked.connect(self._save)
 
         # --- Nút Trigger Data ---
         self._btn_trigger = QPushButton("⚡  Trigger Data")
         self._btn_trigger.setFixedHeight(36)
         self._btn_trigger.setFixedWidth(150)
-        self._btn_trigger.setStyleSheet(f"""
-            QPushButton {{
-                background-color: transparent;
-                border: 2px solid #f59e0b;
-                border-radius: 6px;
-                color: #f59e0b;
-                font-size: 12px;
-                font-weight: bold;
-            }}
-            QPushButton:hover {{
-                background-color: #2a1f00;
-                border-color: #fbbf24;
-                color: #fbbf24;
-            }}
-            QPushButton:pressed {{
-                background-color: #3d2d00;
-            }}
-        """)
+        self._btn_trigger.setStyleSheet(styles.get_trigger_btn_style())
         self._btn_trigger.clicked.connect(self._trigger_data)
 
         # --- Nút Tắt máy ---
         btn_shutdown = QPushButton("⏻  Tắt máy")
         btn_shutdown.setFixedHeight(36)
         btn_shutdown.setFixedWidth(120)
-        btn_shutdown.setStyleSheet(f"""
-            QPushButton {{
-                background-color: transparent;
-                border: 2px solid #64748b;
-                border-radius: 6px;
-                color: #64748b;
-                font-size: 12px;
-                font-weight: bold;
-            }}
-            QPushButton:hover {{
-                background-color: #1a1f2a;
-                border-color: #94a3b8;
-                color: #94a3b8;
-            }}
-            QPushButton:pressed {{
-                background-color: #0f1520;
-                border-color: #475569;
-                color: #475569;
-            }}
-        """)
+        btn_shutdown.setStyleSheet(styles.get_shutdown_btn_style())
         btn_shutdown.clicked.connect(self._shutdown)
 
         action_row.addSpacing(4)
@@ -511,14 +304,12 @@ class SettingsScreen(QWidget):
 
             for key, inp in self._inputs.items():
                 inp.setEnabled(True)
-                if key in ("ftp_pass", "mqtt_pass"):
-                    inp.setStyleSheet(self._input_pass_style_enabled())
-                else:
-                    inp.setStyleSheet(self._input_style_enabled())
+                is_pass = key in ("ftp_pass", "mqtt_pass")
+                inp.setStyleSheet(styles.get_input_style(self._theme, enabled=True, is_password=is_pass))
 
             for btn_eye, inp in self._toggles:
                 btn_eye.setEnabled(True)
-                btn_eye.setStyleSheet(self._eye_style_enabled())
+                btn_eye.setStyleSheet(styles.get_eye_btn_style(self._theme, enabled=True))
 
             self._btn_cancel.setEnabled(True)
             self._btn_save.setEnabled(True)
@@ -573,86 +364,44 @@ class SettingsScreen(QWidget):
 
     def apply_theme(self, theme):
         """Cập nhật toàn bộ giao diện Cài đặt theo theme (Dark / Light)."""
-        self._theme = theme
-        self.setStyleSheet(f"background-color: {theme['bg']};")
+        self._theme = styles._resolve_theme(theme)
+        t = self._theme
+        self.setStyleSheet(f"background-color: {t['bg']};")
 
         if hasattr(self, '_title_lbl'):
-            self._title_lbl.setStyleSheet(f"color: {theme['text']};")
+            self._title_lbl.setStyleSheet(f"color: {t['text']};")
         if hasattr(self, '_pass_lbl'):
-            self._pass_lbl.setStyleSheet(f"color: {theme['label']};")
+            self._pass_lbl.setStyleSheet(f"color: {t['label']};")
         if hasattr(self, '_divider'):
-            self._divider.setStyleSheet(f"color: {theme['card_border']};")
+            self._divider.setStyleSheet(f"color: {t['card_border']};")
 
         if hasattr(self, '_pass_input'):
-            self._pass_input.setStyleSheet(f"""
-                QLineEdit {{
-                    background-color: {theme['chart_bg']};
-                    border: 1px solid {theme['card_border']};
-                    border-radius: 6px;
-                    padding: 6px 10px;
-                    color: {theme['text']};
-                    font-size: 13px;
-                }}
-                QLineEdit:focus {{ border: 1px solid {theme['accent']}; }}
-            """)
+            self._pass_input.setStyleSheet(styles.get_pass_unlock_input_style(t))
 
         if hasattr(self, '_btn_unlock'):
-            self._btn_unlock.setStyleSheet(f"""
-                QPushButton {{
-                    background-color: {theme['accent']};
-                    border: none;
-                    border-radius: 6px;
-                    color: {theme['bg']};
-                    font-size: 12px;
-                    font-weight: bold;
-                }}
-                QPushButton:hover {{ opacity: 0.9; }}
-            """)
+            self._btn_unlock.setStyleSheet(styles.get_unlock_btn_style(t))
 
         if hasattr(self, '_btn_close'):
-            self._btn_close.setStyleSheet(f"""
-                QPushButton {{
-                    background-color: transparent;
-                    border: 1px solid {theme['card_border']};
-                    border-radius: 6px;
-                    color: {theme['label']};
-                    font-size: 12px;
-                }}
-                QPushButton:hover {{ background-color: {theme['card_bg']}; }}
-            """)
+            self._btn_close.setStyleSheet(styles.get_close_btn_style(t))
+
+        if hasattr(self, '_btn_save'):
+            self._btn_save.setStyleSheet(styles.get_save_btn_style(t))
 
         for frame in self._section_frames:
-            frame.setStyleSheet(f"""
-                QFrame {{
-                    background-color: {theme['card_bg']};
-                    border: 1px solid {theme['card_border']};
-                    border-radius: 8px;
-                }}
-            """)
+            frame.setStyleSheet(styles.get_section_frame_style(t))
 
         for title in self._section_titles:
-            title.setStyleSheet(f"color: {theme['accent']}; border: none;")
+            title.setStyleSheet(f"color: {t['accent']}; border: none;")
 
         for lbl in self._field_labels:
-            lbl.setStyleSheet(f"color: {theme['label']}; border: none;")
+            lbl.setStyleSheet(f"color: {t['label']}; border: none;")
 
         for key, inp in self._inputs.items():
-            if self._unlocked:
-                if key in ("ftp_pass", "mqtt_pass"):
-                    inp.setStyleSheet(self._input_pass_style_enabled())
-                else:
-                    inp.setStyleSheet(self._input_style_enabled())
-            else:
-                if key in ("ftp_pass", "mqtt_pass"):
-                    inp.setStyleSheet(self._input_pass_style_disabled())
-                else:
-                    inp.setStyleSheet(self._input_style_disabled())
+            is_pass = key in ("ftp_pass", "mqtt_pass")
+            inp.setStyleSheet(styles.get_input_style(t, enabled=self._unlocked, is_password=is_pass))
 
         for btn_eye, _ in self._toggles:
-            if self._unlocked:
-                btn_eye.setStyleSheet(self._eye_style_enabled())
-            else:
-                btn_eye.setStyleSheet(self._eye_style_disabled())
+            btn_eye.setStyleSheet(styles.get_eye_btn_style(t, enabled=self._unlocked))
 
 
 def open_settings(parent=None, on_trigger_data=None):
